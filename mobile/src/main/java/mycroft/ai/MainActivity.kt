@@ -220,6 +220,7 @@ class MainActivity : AppCompatActivity() {
                         override fun call(param: Utterance) {
                             addData(param)
                         }
+
                     }))
                 }
 
@@ -237,6 +238,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addData(mycroftUtterance: Utterance) {
+
+
         utterances.add(mycroftUtterance)
         mycroftAdapter.notifyItemInserted(utterances.size - 1)
         if (voxswitch.isChecked) {

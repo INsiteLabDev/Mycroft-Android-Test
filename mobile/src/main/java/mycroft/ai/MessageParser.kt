@@ -24,6 +24,7 @@ import android.util.Log
 
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.*
 
 /**
  * Specialised Runnable that parses the [JSONObject] in [.message]
@@ -47,8 +48,17 @@ internal class MessageParser(private val message: String,
         // {"data": {"utterance": "There are only two hard problems in Computer Science: cache invalidation, naming things and off-by-one-errors."}, "type": "speak", "context": null}
         try {
             val obj = JSONObject(message)
+
+
+            // only happens when Mycroft speaks
             if (obj.optString("type") == "speak") {
+                //"<speak><prosody volume= " + settings_dict["volume"]
+                //                                    + " rate= " + settings_dict["rate"] + ">" +
+                //                                    chunk + "</prosody></speak>"
+                //val obj = JSONObject("{\"type\": \"speak\", \"data\": {\"utterance\": \"<speak><prosody rate='0.6'>I change it! Please work oh god please alright I am done now</prosody></speak>\", \"expect_response\": false}, \"context\": {}}");
+
                 val ret = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.MYCROFT)
+
                 callback.call(ret)
             }
         } catch (e: JSONException) {

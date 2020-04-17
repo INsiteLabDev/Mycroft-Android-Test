@@ -23,10 +23,12 @@ package mycroft.ai
 import android.app.Activity
 import android.app.Service
 import android.content.Context
+import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import android.speech.tts.TextToSpeech.EngineInfo
 import android.util.Log
-
-import java.util.Locale
+import java.util.*
+import kotlin.collections.HashMap
 
 
 /**
@@ -51,6 +53,7 @@ class TTSManager {
      * Backing TTS for this instance. Should not (ever) be null.
      */
     private lateinit var mTts: TextToSpeech
+    private var testEngine: EngineInfo = EngineInfo()
     /**
      * Whether the TTS is available for use (i.e. loaded into memory)
      */
@@ -60,6 +63,11 @@ class TTSManager {
      * External listener for error and success events. May be null.
      */
     private var mTTSListener: TTSListener? = null
+
+    operator fun Bundle.set(key: String, value: String) = putString(key, value)
+
+
+
 
     var onInitListener: TextToSpeech.OnInitListener = TextToSpeech.OnInitListener { status ->
         if (status == TextToSpeech.SUCCESS) {
@@ -105,20 +113,60 @@ class TTSManager {
     }
 
     fun addQueue(text: String) {
-        if (isLoaded)
-            mTts.speak(text, TextToSpeech.QUEUE_ADD, null)
+
+        val testInfo = testEngine.name
+
+        // change the speed of the audio output
+        if (text.contains("quickly")) {
+            mTts.setSpeechRate(3.0F)
+        }
+
+        if (text.contains("slowly")) {
+            mTts.setSpeechRate(0.5F)
+        }
+
+        if (text.contains("normal")) {
+            mTts.setSpeechRate(1.0F)
+            mTts.setPitch(1.0F)
+        }
+
+        // change the pitch of the audio output
+        if (text.contains("lower")) {
+            mTts.setPitch(0.5F)
+        }
+
+        if (text.contains("higher")) {
+            mTts.setPitch(3F)
+        }
+
+        val map = HashMap<String, String?>(1, 0.7F)
+        map.put("KEY_PARAM_STREAM", null)
+        map.put("KEY_PARAM_VOLUME", "0.2")
+        map.put("KEY_PARAM_PAN", null)
+        // change the volume of the audio output
+
+
+        // change the modality of the audio output
+
+
+
+        if (isLoaded) {
+
+            mTts.speak(text, TextToSpeech.QUEUE_ADD, map)
+        }
         else {
             logError("TTS Not Initialized")
         }
     }
 
     fun initQueue(text: String) {
-
-        if (isLoaded)
+        if (isLoaded) {
             mTts.speak(text, TextToSpeech.QUEUE_FLUSH, null)
+        }
         else
             logError("TTS Not Initialized")
     }
+
 
     /**
      * Wrapper around [Log.e] that also notifies
