@@ -27,6 +27,7 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.EngineInfo
 import android.util.Log
+import java.lang.Float.parseFloat
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -66,12 +67,21 @@ class TTSManager {
 
     operator fun Bundle.set(key: String, value: String) = putString(key, value)
 
+    //current API version is 19
+    //var androidAPILevel = android.os.Build.VERSION.SDK_INT
+
+    //paprams is used by the hashmap to set volume
+    val params = HashMap<String, String>()
+
+
 
 
 
     var onInitListener: TextToSpeech.OnInitListener = TextToSpeech.OnInitListener { status ->
         if (status == TextToSpeech.SUCCESS) {
             val result = mTts.setLanguage(Locale.US)
+            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "0.5") // change the 0.5 to any value from 0-1 (1 is default)
+
             isLoaded = true
             Log.i(TAG, "TTS initialized")
 
@@ -113,46 +123,84 @@ class TTSManager {
     }
 
     fun addQueue(text: String) {
-
-        val testInfo = testEngine.name
-
+        //if you say "soft" or "softer" it will recognize
         // change the speed of the audio output
-        if (text.contains("quickly")) {
+
+        var finalText = text
+
+        //we are splitting the text input into an array
+        val parts = finalText.split(" ").toMutableList()
+
+
+        var speed = parts.indexOf("speed")
+
+        if(speed != -1 && speed != parts.size-1){
+            var speed1 = parts[speed+1].toFloatOrNull()
+            if(speed1 != null){
+                mTts.setSpeechRate(speed1)
+                //parts.remove("speed")
+                //parts.remove(parts[speed])
+                finalText = parts.joinToString(" ")
+            }
+        }
+
+        var pitch = parts.indexOf("pitch")
+
+        if(pitch != -1 && pitch != parts.size-1){
+            var pitch1 = parts[pitch+1].toFloatOrNull()
+            if(pitch1 != null){
+                mTts.setPitch(pitch1)
+                //parts.remove("pitch")
+                //parts.remove(parts[pitch])
+                finalText = parts.joinToString(" ")
+            }
+        }
+
+        var volume = parts.indexOf("toot")
+
+        if(volume != -1 && volume != parts.size-1){
+            if(parts[volume+1] != null){
+                params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, parts[volume+1]) // change the 0.5 to any value from 0-1 (1 is default)
+                //parts.remove("volume")
+                //parts.remove(parts[volume])
+                finalText = parts.joinToString(" ")
+            }
+        }
+
+        if (finalText.contains("normal")) {
+            mTts.setSpeechRate(1.0F)
+            mTts.setPitch(1.0F)
+            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "0.5") // change the 0.5 to any value from 0-1 (1 is default)
+        }
+
+        if (finalText.contains("quickly")) {
             mTts.setSpeechRate(3.0F)
         }
 
-        if (text.contains("slowly")) {
+        if (finalText.contains("slowly")) {
             mTts.setSpeechRate(0.5F)
         }
 
-        if (text.contains("normal")) {
-            mTts.setSpeechRate(1.0F)
-            mTts.setPitch(1.0F)
-        }
-
         // change the pitch of the audio output
-        if (text.contains("lower")) {
+        if (finalText.contains("low")) {
             mTts.setPitch(0.5F)
         }
 
-        if (text.contains("higher")) {
+        if (finalText.contains("high")) {
             mTts.setPitch(3F)
         }
-
-        val map = HashMap<String, String?>(1, 0.7F)
-        map.put("KEY_PARAM_STREAM", null)
-        map.put("KEY_PARAM_VOLUME", "0.2")
-        map.put("KEY_PARAM_PAN", null)
-        // change the volume of the audio output
-
-
-        // change the modality of the audio output
+        if (finalText.contains("soft")) {
+            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "0.1") // change the 0.5 to any value from 0-1 (1 is default)
+        }
+        if (finalText.contains("loud")) {
+            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1.0") // change the 0.5 to any value from 0-1 (1 is default)
+        }
 
 
 
         if (isLoaded) {
 
-            mTts.speak(text, TextToSpeech.QUEUE_ADD, map)
+            mTts.speak(finalText, TextToSpeech.QUEUE_ADD, params)
         }
         else {
             logError("TTS Not Initialized")
