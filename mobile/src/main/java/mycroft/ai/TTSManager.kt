@@ -122,84 +122,82 @@ class TTSManager {
         mTts.shutdown()
     }
 
-    fun addQueue(text: String) {
+    fun addQueue(text: String, utteranceFrom: UtteranceFrom) {
         //if you say "soft" or "softer" it will recognize
         // change the speed of the audio output
 
         var finalText = text
 
-        //we are splitting the text input into an array
-        val parts = finalText.split(" ").toMutableList()
+        if (utteranceFrom == UtteranceFrom.USER) {
+            //we are splitting the text input into an array
+            val parts = finalText.split(" ").toMutableList()
 
+            var speed = parts.indexOf("speed")
 
-        var speed = parts.indexOf("speed")
+            if(speed != -1 && speed != parts.size-1){
+                var speed1 = parts[speed+1].toFloatOrNull()
+                if(speed1 != null){
+                    mTts.setSpeechRate(speed1)
+                    //parts.remove("speed")
+                    //parts.remove(parts[speed])
+                    //finalText = parts.joinToString(" ")
+                }
+            }
 
-        if(speed != -1 && speed != parts.size-1){
-            var speed1 = parts[speed+1].toFloatOrNull()
-            if(speed1 != null){
-                mTts.setSpeechRate(speed1)
-                //parts.remove("speed")
-                //parts.remove(parts[speed])
-                finalText = parts.joinToString(" ")
+            var pitch = parts.indexOf("pitch")
+
+            if(pitch != -1 && pitch != parts.size-1){
+                var pitch1 = parts[pitch+1].toFloatOrNull()
+                if(pitch1 != null){
+                    mTts.setPitch(pitch1)
+                    //parts.remove("pitch")
+                    //parts.remove(parts[pitch])
+                    //finalText = parts.joinToString(" ")
+                }
+            }
+
+            var volume = parts.indexOf("toot")
+
+            if(volume != -1 && volume != parts.size-1){
+                if(parts[volume+1] != null){
+                    params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, parts[volume+1]) // change the 0.5 to any value from 0-1 (1 is default)
+                    //parts.remove("volume")
+                    //parts.remove(parts[volume])
+                    //finalText = parts.joinToString(" ")
+                }
+            }
+
+            if (finalText.contains("normal")) {
+                mTts.setSpeechRate(1.0F)
+                mTts.setPitch(1.0F)
+                params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "0.5") // change the 0.5 to any value from 0-1 (1 is default)
+            }
+
+            if (finalText.contains("quickly")) {
+                mTts.setSpeechRate(3.0F)
+            }
+
+            if (finalText.contains("slowly")) {
+                mTts.setSpeechRate(0.5F)
+            }
+
+            // change the pitch of the audio output
+            if (finalText.contains("low")) {
+                mTts.setPitch(0.5F)
+            }
+
+            if (finalText.contains("high")) {
+                mTts.setPitch(3F)
+            }
+            if (finalText.contains("soft")) {
+                params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "0.1") // change the 0.5 to any value from 0-1 (1 is default)
+            }
+            if (finalText.contains("loud")) {
+                params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1.0") // change the 0.5 to any value from 0-1 (1 is default)
             }
         }
-
-        var pitch = parts.indexOf("pitch")
-
-        if(pitch != -1 && pitch != parts.size-1){
-            var pitch1 = parts[pitch+1].toFloatOrNull()
-            if(pitch1 != null){
-                mTts.setPitch(pitch1)
-                //parts.remove("pitch")
-                //parts.remove(parts[pitch])
-                finalText = parts.joinToString(" ")
-            }
-        }
-
-        var volume = parts.indexOf("toot")
-
-        if(volume != -1 && volume != parts.size-1){
-            if(parts[volume+1] != null){
-                params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, parts[volume+1]) // change the 0.5 to any value from 0-1 (1 is default)
-                //parts.remove("volume")
-                //parts.remove(parts[volume])
-                finalText = parts.joinToString(" ")
-            }
-        }
-
-        if (finalText.contains("normal")) {
-            mTts.setSpeechRate(1.0F)
-            mTts.setPitch(1.0F)
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "0.5") // change the 0.5 to any value from 0-1 (1 is default)
-        }
-
-        if (finalText.contains("quickly")) {
-            mTts.setSpeechRate(3.0F)
-        }
-
-        if (finalText.contains("slowly")) {
-            mTts.setSpeechRate(0.5F)
-        }
-
-        // change the pitch of the audio output
-        if (finalText.contains("low")) {
-            mTts.setPitch(0.5F)
-        }
-
-        if (finalText.contains("high")) {
-            mTts.setPitch(3F)
-        }
-        if (finalText.contains("soft")) {
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "0.1") // change the 0.5 to any value from 0-1 (1 is default)
-        }
-        if (finalText.contains("loud")) {
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME, "1.0") // change the 0.5 to any value from 0-1 (1 is default)
-        }
-
-
 
         if (isLoaded) {
-
             mTts.speak(finalText, TextToSpeech.QUEUE_ADD, params)
         }
         else {

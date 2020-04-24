@@ -49,6 +49,11 @@ class MycroftAdapter(private val utteranceList: List<Utterance>, private val ctx
         return utteranceList.size
     }
 
+    /*// we did this
+    fun getLatestUtterance(): UtteranceFrom {
+        return utteranceList.get(utteranceList.size-1).from;
+    }*/
+
     override fun onBindViewHolder(utteranceViewHolder: UtteranceViewHolder, i: Int) {
         utteranceViewHolder.vUtterance.text = utteranceList[i].utterance
         utteranceViewHolder.itemView.setOnLongClickListener {v ->
