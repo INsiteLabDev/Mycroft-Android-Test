@@ -126,33 +126,60 @@ class TTSManager {
         //if you say "soft" or "softer" it will recognize
         // change the speed of the audio output
 
+        //HASHTABLE for converting word numbers to numerical numbers
+        var numCon = HashMap<String, Float>();
+        numCon.put("one",   1.0F)
+        numCon.put("two",   2.0F)
+        numCon.put("three", 3.0F)
+        numCon.put("four",  4.0F)
+        numCon.put("five",  5.0F)
+
         var finalText = text
 
         if (utteranceFrom == UtteranceFrom.USER) {
             //we are splitting the text input into an array
-            val parts = finalText.split(" ").toMutableList()
+            val parts = finalText.toLowerCase().split(" ").toMutableList()
+
 
             var speed = parts.indexOf("speed")
 
+            //lower rate are below 1, higher rate are above 1
             if(speed != -1 && speed != parts.size-1){
-                var speed1 = parts[speed+1].toFloatOrNull()
-                if(speed1 != null){
-                    mTts.setSpeechRate(speed1)
+                var speed1 = parts[speed+1]
+                if(speed1 != null && numCon.containsKey(speed1)){
+                    var level = numCon[speed1]
+                    if(level == null)
+                        return
+                    else
+                        mTts.setSpeechRate(level)
                     //parts.remove("speed")
                     //parts.remove(parts[speed])
                     //finalText = parts.joinToString(" ")
                 }
+                var speed2 = speed1.toFloatOrNull()
+                if(speed2 != null){
+                    mTts.setSpeechRate(speed2)
+                }
             }
 
+            //lower pitches are below 1, higher pitches are above 1
             var pitch = parts.indexOf("pitch")
 
             if(pitch != -1 && pitch != parts.size-1){
-                var pitch1 = parts[pitch+1].toFloatOrNull()
-                if(pitch1 != null){
-                    mTts.setPitch(pitch1)
+                var pitch1 = parts[pitch+1]
+                if(pitch1 != null && numCon.containsKey(pitch1)){
+                    var level = numCon[pitch1]
+                    if(level == null)
+                        return
+                    else
+                        mTts.setPitch(level)
                     //parts.remove("pitch")
                     //parts.remove(parts[pitch])
                     //finalText = parts.joinToString(" ")
+                }
+                var pitch2 = pitch1.toFloatOrNull()
+                if(pitch2 != null){
+                    mTts.setPitch(pitch2)
                 }
             }
 

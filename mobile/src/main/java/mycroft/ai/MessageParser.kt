@@ -38,9 +38,11 @@ import java.util.*
  *
  * @author Philip Cohn-Cort
  */
+var userSaidNormal = false;
 internal class MessageParser(private val message: String,
                              private val callback: SafeCallback<Utterance>) : Runnable {
     private val logTag = "MessageParser"
+
 
     override fun run() {
         Log.i(logTag, message)
@@ -51,16 +53,28 @@ internal class MessageParser(private val message: String,
 
 
             // only happens when Mycroft speaks
+            //if (obj.optString("type") == "recognizer_loop:utterance") {
+                //print("hello there")
+            val userSaid = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.USER)
+            if(userSaid.utterance.toLowerCase() == "normal"){
+                userSaidNormal = true;
+            }
+            //}
             if (obj.optString("type") == "speak") {
                 //"<speak><prosody volume= " + settings_dict["volume"]
                 //                                    + " rate= " + settings_dict["rate"] + ">" +
                 //                                    chunk + "</prosody></speak>"
                 //val obj = JSONObject("{\"type\": \"speak\", \"data\": {\"utterance\": \"<speak><prosody rate='0.6'>I change it! Please work oh god please alright I am done now</prosody></speak>\", \"expect_response\": false}, \"context\": {}}");
+                var ret = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.MYCROFT)
 
-                val ret = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.MYCROFT)
+                if(userSaidNormal) {
+                    ret = Utterance("settings are now normal", UtteranceFrom.MYCROFT)
+                    userSaidNormal = false;
+                }
 
                 callback.call(ret)
             }
+
         } catch (e: JSONException) {
             Log.e(logTag, "The response received did not conform to our expected JSON format.", e)
         }
